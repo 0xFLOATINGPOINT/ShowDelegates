@@ -9,6 +9,7 @@ using FrooxEngine.UIX;
 using Elements.Core;
 using FrooxEngine.ProtoFlux;
 using System.Reflection.Emit;
+using System.Runtime;
 
 namespace ShowDelegates
 {
@@ -196,19 +197,47 @@ namespace ShowDelegates
 
                     if (!syncFuncs.Any()) return;
 
-                    var myTxt = ui.Text("---- SYNC METHODS HERE ----", true, new Alignment?(Alignment.MiddleCenter), true, null);
+                    var myTxt = ui.Text("<size=180><b>↓ SYNC METHODS HERE ↓</size></b>", true, new Alignment?(Alignment.MiddleCenter), true, null);
                     var delegates = ui.VerticalLayout();
                     delegates.Slot.ActiveSelf = false;
                     delegates.Slot.RemoveComponent(delegates.Slot.GetComponent<LayoutElement>());
-                    var expander = myTxt.Slot.AttachComponent<Expander>();
-                    expander.SectionRoot.Target = delegates.Slot;
-                    expander.IsExpanded = config.GetValue(KEY_DEFAULT_OPEN);
-                    var theButton = myTxt.Slot.AttachComponent<Button>();
-                    var colorDriver = theButton.ColorDrivers.Add();
-                    colorDriver.ColorDrive.Target = myTxt.Color;
-                    RadiantUI_Constants.SetupLabelDriverColors(colorDriver);
-                    // Prevent accidental presses when scrolling
-                    theButton.RequireLockInToPress.Value = true;
+                    {
+                        myTxt.Slot.AddSlot("GooberButton", false);
+                        Slot GooberSlot = myTxt.Slot.FindChild("GooberButton");
+                        GooberSlot.Parent = myTxt.Slot.Parent;
+
+                        var layoutElement = GooberSlot.AttachComponent<LayoutElement>();
+                        layoutElement.MinHeight.Value = 32f;
+
+                        var StaticTexture2D = GooberSlot.AttachComponent<StaticTexture2D>();
+                        StaticTexture2D.URL.Value = new Uri("resdb:///cb6bd15c284f070b02dd72f02a790e1c58b3e12c2af229cc7c9323b7320739e4.png");
+
+                        var SpriteProvider = GooberSlot.AttachComponent<SpriteProvider>();
+                        SpriteProvider.Texture.Value = StaticTexture2D.ReferenceID;
+                        SpriteProvider.Borders.Value = new float4(0.5f, 0.5f, 0.5f, 0.5f);
+
+                        var Image = GooberSlot.AttachComponent<Image>();
+                        Image.Sprite.Value = SpriteProvider.ReferenceID;
+                        Image.NineSliceSizing.Value = NineSliceSizing.RectHeight;
+
+                        var Expander = GooberSlot.AttachComponent<Expander>();
+                        Expander.SectionRoot.Target = delegates.Slot;
+                        Expander.IsExpanded = config.GetValue(KEY_DEFAULT_OPEN);
+
+                        var Button = GooberSlot.AttachComponent<Button>();
+                        //var colorDriver = Button.ColorDrivers.Add();
+                        Button.RequireLockInToPress.Value = true;
+
+                        //colorDriver.ColorDrive.Target = myTxt.Color;
+                        //RadiantUI_Constants.SetupLabelDriverColors(colorDriver);
+
+                        colorX ButtonTint = colorX.FromHexCode("#492F64FF");
+                        Button.SetColors(ButtonTint);
+
+                        myTxt.Slot.Parent = GooberSlot;
+                        GooberSlot.OrderOffset = 1;
+                        delegates.Slot.OrderOffset = 2;
+                    }
 
                     foreach (var info in syncFuncs)
                     {
